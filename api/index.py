@@ -221,8 +221,11 @@ def search():
     output = []
     found_dishes = set()
     for dish in All_dishes:
-        ingredients = dish['ingredients']
-        ingredients_lower = [ing['name'].lower() for ing in ingredients]
+        ingredients = dish.get('ingredients', [])
+        if not isinstance(ingredients, list):
+            print(f"Unexpected data type for ingredients: {type(ingredients)}")
+            continue
+        ingredients_lower = [ing['name'].lower() for ing in ingredients if isinstance(ing, dict) and 'name' in ing]
         if (dish['dish_name'], tuple(ingredients_lower)) not in found_dishes:
             dish1 = {
                 "name": dish['dish_name'],
@@ -241,6 +244,8 @@ def search():
             }
             output.append(dish1)
             found_dishes.add((dish['dish_name'], tuple(ingredients_lower)))
+    if not output:
+        return jsonify({"message": "Dish does not exist"}), 404
     return jsonify(output)
 
 
